@@ -1,0 +1,71 @@
+---
+- hosts: all
+  sudo: yes
+  roles:
+   - { role: Datadog.datadog, sudo: yes, datadog_api_key: "113832f567652707594cad2121521d4a" }
+  vars_files:
+    - vars.yml
+  pre_tasks:
+    - name: Update apt cache if needed.
+      apt: update_cache=yes cache_valid_time=3600
+  handlers:
+    - name: Start nginx
+      service: name=nginx state=started
+
+    - name: Reload nginx
+      service: name=nginx state=reload
+
+    - name: Restart nginx
+      service: name=nginx state=restarted
+
+    - name: Update tzdata
+      command: /usr/sbin/dpkg-reconfigure --frontend noninteractive tzdata
+
+    - name: Restart ssh
+      service: name=ssh state=restarted
+  tasks:
+   - name: "Install some others tools"
+     apt: "name={{ item }} state=present"
+     with_items:
+      - git
+      - curl
+      - mcrypt
+      - p7zip-full
+      - lynx
+
+   - name: Ensure a locale exists
+     locale_gen: name={{ locale }} state=present
+
+   - name: set /etc/timezone
+     template: src=templates/timezone.j2 dest=/etc/timezone
+     notify: 
+      - Update tzdata
+
+   # Create deploy user
+   # Setup SSH for key­based auth only 
+   - name: "Create a Deploy user"
+     action: user name={{ username }} password={{ password }} shell=/bin/bash generate_ssh_key=yes ssh_key_bits=2048 ssh_key_file=.ssh/id_rsa
+    
+   - name: "Add deploy user to the /etc/sudoers file"
+     action: lineinfile dest=/etc/sudoers regexp="deploy ALL" line="deploy ALL=(ALL) ALL" state=present
+
+   # disable SSH root login
+   - name: "Disable root SSH login"
+     action: lineinfile dest=/etc/ssh/sshd_config regexp="^PermitRootLogin" line="PermitRootLogin no" state=present
+     notify: 
+      - Restart ssh
+
+   - name: "Enable unattended security updates"
+     action: apt pkg=unattended-upgrades state=present
+
+   # Install Nginx
+   - name: Installs nginx web server
+     apt: pkg=nginx state=installed update_cache=true
+     notify:
+      - Start nginx
+
+   - name: Ensure Nginx is running and enabled
+     service: name=nginx state=started enabled=yes
+
+   - name: Upload default index.html for host
+     copy: src=templates/index.html.j2 dest=/usr/share/nginx/html/test.html mode=0644

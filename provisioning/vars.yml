@@ -1,0 +1,16 @@
+---
+locale: "en_US.UTF-8"
+timezone: "Australia/Melbourne"
+
+username: "deploy"
+password: "bdA-x@q-89JQ"
+
+datadog_api_key: "113832f567652707594cad2121521d4a"
+datadog_config:
+tags: "mytag0, mytag1"
+log_level: INFO
+
+# The resulting domain will be [domain].dev (with .dev appended).
+domain: "wp.dev"
+server_admin: "cuphan@gmail.com"
+document_root: "/var/www/{{ domain }}"

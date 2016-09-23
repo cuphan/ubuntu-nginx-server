@@ -1,0 +1,27 @@
+<VirtualHost *:80>
+    ServerName {{ domain }}
+    ServerAdmin {{ server_admin }}
+    ServerAlias www.{{ domain }}
+    DocumentRoot {{ document_root }}
+
+	<Directory />
+    	Options FollowSymLinks
+        AllowOverride None
+    </Directory>
+
+    <Directory "{{ document_root }}/">
+        Options Indexes FollowSymLinks MultiViews
+
+        #AllowOverride None
+        AllowOverride all
+
+        Order allow,deny
+        allow from all
+    </Directory>
+
+	#Possible values include:debug,info,notice,warn,error,crit,alert,emerg.
+    LogLevel warn
+
+    ErrorLog ${APACHE_LOG_DIR}/{{ domain }}/error.log
+    CustomLog ${APACHE_LOG_DIR}/{{ domain }}/access.log combined
+</VirtualHost>
