@@ -16,4 +16,4 @@ $ vagrant provision
 
 ## Author
 
-* **Viet Cuong Phan - cuphan@gmail.com
+* Viet Cuong Phan - cuphan@gmail.com
